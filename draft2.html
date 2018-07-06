@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="src/phaser.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+	
+
+		var config = {
+			type : Phaser.AUTO,
+			width: 800,
+			height: 608,
+			physics:{
+				default: 'arcade',
+				arcade: {
+					gravity: {y: 500},
+					debug: false
+				}
+			},
+			scene:{
+				key : 'main',
+				preload: preload,
+				create: create,
+				
+			}
+		};
+
+		var game = new Phaser.Game( config );
+
+		var map;
+		var player;
+		var cursors;
+		var groundLayer, backgroundLayer;
+		var text;
+		var score = 0;
+		var text;
+
+
+		
+
+		/**
+		 * [preload: This function is used to load the assets for our game]
+		 * @return {[void]} [Returns void]
+		 */
+		function preload(){
+			//map made with Tiled in JSON format
+			this.load.tilemapTiledJSON('testmap', 'assets/testmap.json');
+
+			//title in spritesheet
+			this.load.spritesheet('tiles','assets/tiles.png', {frameWidth: 70, frameHeight: 70});
+
+			this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+
+			this.load.spritesheet('scifitileset2', 'assets/scifitileset2.png', {frameWidth: 36, frameHeight: 36});
+			
+
+			//simple coin image
+			
+
+		
+
+
+
+			//player animations
+			
+		}
+
+		/**
+		 * [create: places assets on the screen]
+		 * @return {[void]} [Returns void]
+		 */
+		function create(){
+
+			//WORLD
+				//load map
+				map = this.make.tilemap({key : 'testmap'});
+
+				var groundTiles = map.addTilesetImage('tiles');
+
+				var backgroundTiles = map.addTilesetImage('scifitileset2')
+
+				groundLayer = map.createDynamicLayer('World', groundTiles, 0, 0);
+
+				backgroundLayer = map.createDynamicLayer('Background', backgroundTiles, 0, 0);
+
+
+				groundLayer.setCollisionByExclusion([-1]);
+
+					this.physics.world.bounds.width 	= groundLayer.width;
+				this.physics.world.bounds.height 	= groundLayer.height;
+
+
+
+					//set bounds so the camera won't go outside the game world
+
+				
+				//make the camera follow the player
+			
+			//PLAYERu
+			player = this.physics.add.sprite(200,0, 'player');
+			
+
+
+			player.setCollideWorldBounds(true);
+
+			this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels );
+
+				//make the camera follow the player
+				this.cameras.main.startFollow(player);
+
+				//set background color, so the sky is not black
+				this.cameras.main.setBackgroundColor('#ccccff');
+
+
+
+				this.physics.add.collider(groundLayer, player);
+
+
+			
+
+
+			//CAMERA
+				
+				
+
+			
+				//Coin image used as tileset
+				
+			
+		}
+
+		/**
+		 * [update is the main game loop]
+		 * @return {[void]} [Returns void]
+		 */
+		
+
+
+		/**
+		 * [collectCoin runs when player touches a coin. It removes sprite and adds to score
+		 * @param  {[object]} sprite [Graphic asset]
+		 * @param  {[object]} tile   [specific coin that player collided with]
+		 * @return {[boolean]}       [returns boolean: false]
+		 */
+	
+
+	</script>	
+	
+</body>
+</html>

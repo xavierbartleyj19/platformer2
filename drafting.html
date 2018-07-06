@@ -12,8 +12,8 @@
 
 		var config = {
 			type : Phaser.AUTO,
-			width: 800,
-			height: 600,
+			width: window.innerWidth,
+			height: window.innerHeight,
 			physics:{
 				default: 'arcade',
 				arcade: {
@@ -26,18 +26,28 @@
 				preload: preload,
 				create: create,
 				update: update
+				
 			}
-		}
+		};
 
 		var game = new Phaser.Game( config );
 
 		var map;
 		var player;
 		var cursors;
-		var groundLayer, coinLayer, fakecoinLayer, tilelayer, finishcoinlayer;
+		var groundLayer, coinLayer, fakecoinLayer, tilelayer, finishcoinlayer, backgroundLayer, ladderLayer, decolayer;
 		var text;
 		var score = 0;
-		var text;
+		var text2;
+		var leftflag = 0;
+		var rightflag = 1;
+		var spacebar;
+		var climbladder = 0;
+		var text3;
+		var collayer1, collayer2, collayer3, collayer4;
+
+
+
 		
 
 		/**
@@ -46,22 +56,23 @@
 		 */
 		function preload(){
 			//map made with Tiled in JSON format
-			this.load.tilemapTiledJSON('map', 'assets/gamemap2.json');
+			this.load.tilemapTiledJSON('map', 'assets/game2map.json');
 
 			//title in spritesheet
-			this.load.spritesheet('tiles','assets/tiles.png', {frameWidth: 70, frameHeight: 70});
-
-			//simple coin image
+			this.load.spritesheet('scifitileset2','assets/scifitileset2.png', {frameWidth: 32, frameHeight: 32});
 			this.load.image('coin', 'assets/coinGold.png');
 
-			this.load.image('fakegold', 'assets/fakegold.png');
+			this.load.spritesheet("dude", 'assets/M484SpaceSoldier (1).png', {frameWidth: 51, frameHeight:51});
 
-			this.load.image('levelfinishgold', 'assets/levelfinishgold.png');
+			//simple coin image
+			
+
+		
 
 
 
 			//player animations
-			this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+			
 		}
 
 		/**
@@ -72,151 +83,220 @@
 
 			//WORLD
 				//load map
-				map = this.make.tilemap({key: 'map'});
+				map = this.make.tilemap({key : 'map'});
 
-				//tiles for the ground layer
-				var groundTiles = map.addTilesetImage('tiles');
-				var coinTiles = map.addTilesetImage('fakegold');
-				var levelcompletetiles = map.addTilesetImage('levelfinishgold');
 
-				//create the ground layer
+				var groundTiles = map.addTilesetImage('scifitileset2');
+
+				var backgrountiles = map.addTilesetImage('scifitileset2');
+
+				var laddertiles = map.addTilesetImage('scifitileset2');
+
+				var decotiles = map.addTilesetImage('scifitileset2');
+				var col1tile = map.addTilesetImage('scifitileset2');
+				var col2tile = map.addTilesetImage('scifitileset2');
+				var col3tile = map.addTilesetImage('scifitileset2');
+				var col4tile = map.addTilesetImage('scifitileset2');
+
+				collayer1 = map.createDynamicLayer('collumn1', col1tile,0,0);
+
+				collayer2 = map.createDynamicLayer('collumn2', col2tile,0,0);
+
+				collayer3 = map.createDynamicLayer('collumn3', col3tile,0,0);
+
+				collayer4 = map.createDynamicLayer('collumn4', col4tile,0,0);
+
+
 				groundLayer = map.createDynamicLayer('World', groundTiles, 0, 0);
-				fakecoinLayer = map.createDynamicLayer('Fakecoins', coinTiles, 0, 0);
-				finishcoinlayer = map.createDynamicLayer('levelcomplete', levelcompletetiles, 0, 0);
 
-				//The player will collide with this layer
+				backgroundLayer = map.createDynamicLayer('background', backgrountiles, 0, 0);
+				ladderLayer = map.createDynamicLayer('ladder', laddertiles, 0, 0);
+				decolayer = map.createDynamicLayer('deco', decotiles, 0, 0);
 				groundLayer.setCollisionByExclusion([-1]);
-				fakecoinLayer.setCollisionByExclusion([-1]);
-
-				//set the boundaries of our game world
-				this.physics.world.bounds.width 	= groundLayer.width;
-				this.physics.world.bounds.height 	= groundLayer.height;
-
-
-			//PLAYER
 				
-				player = this.physics.add.sprite(200,200, 'player');
-				
-				player.setCollideWorldBounds(true);
-
-				//Add Keyboard Events
-				cursors = this.input.keyboard.createCursorKeys();
 
 
-			//CAMERA
-				
-				//set bounds so the camera won't go outside the game world
 				this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels );
+
+					player = this.physics.add.sprite(200,300,'dude');
+					cursors = this.input.keyboard.createCursorKeys();
+
+
+					this.physics.add.collider(groundLayer, player);
+					this.physics.add.collider(collayer1, player);
+					this.physics.add.collider(collayer2, player);
+					this.physics.add.collider(collayer3, player);
+					this.physics.add.collider(collayer4, player);
+					this.physics.add.overlap(player, ladderLayer, useladder, null, this);
+
 
 				//make the camera follow the player
 				this.cameras.main.startFollow(player);
-
-				//set background color, so the sky is not black
-				this.cameras.main.setBackgroundColor('#ccccff');
-
-			//ANIMATION
 			
+			//PLAYERanimation
 				this.anims.create({
-					key : "walk",
-					frames: this.anims.generateFrameNames('player', {prefix: 'p1_walk', start: 1, end: 11, zeroPad: 2}),
+					key: "right",
+					frames: this.anims.generateFrameNumbers('dude', {start:8, end:15}),
 					frameRate: 10,
-					repeat: -1 // loop forever
+					repeat: -1
+
 				});
 
 				this.anims.create({
-					key: 'idle',
-					frames: [{key: 'player', frame: 'p1_stand'}],
-					frameRate : 10
-				})
+					key: "left",
+					frames: this.anims.generateFrameNumbers('dude', {start:16, end:23}),
+					frameRate: 10,
+					repeat: -1
+					
+
+				});
+
+				this.anims.create({
+					key: "turn",
+					frames: [{key: 'dude', frame:0}],
+					frameRate: 2,
+					
+					
+
+				});
+				this.anims.create({
+					key: "turnleft",
+					frames: [{key: 'dude', frame:1}],
+					frameRate: 2,
+					
+					
+
+				});
+
+				this.anims.create({
+					key: "jumpleft",
+					frames: this.anims.generateFrameNumbers('dude', {start:0, end:6}),
+					frameRate: 1,
+				//frames: this.anims.generateFrameNumbers('dude', {frames: [2,4,6]}),
+					
+
+				});
 
 
-			//PICKUPS
-				//Coin image used as tileset
-				var coinTiles = map.addTilesetImage('coin');
+				spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-				//add coints as tiles
-				coinLayer = map.createDynamicLayer('Coins', coinTiles, 0, 0);
-
-
-				coinLayer.setTileIndexCallback(17, collectCoin, this );
-
-			//OBJECT COLLISIONS
-			
-				//Collision between floor and player
-				this.physics.add.collider(groundLayer, player);
-				this.physics.add.collider(fakecoinLayer, player);
-				this.physics.add.collider(finishcoinlayer, player);
-
-
-				//Collision between coin and player
-				this.physics.add.overlap(player, coinLayer);
-
-			
-			//SCORE UI
-				
 				text = this.add.text(20, 570, '0', {
 					fontSize : '20px',
 					fill: '#ffffff'
 				});
 				text.setScrollFactor(0);
 
-		}
+				text2 = this.add.text(20, 600, '0', {
+					fontSize : '20px',
+					fill: '#ffffff'
+				});
+				text2.setScrollFactor(0);
 
-		/**
-		 * [update is the main game loop]
-		 * @return {[void]} [Returns void]
-		 */
-		function update(){
-			//EVENTS / MECHANICS
-			
+				text3 = this.add.text(player.x, player.y - 20, '0', {
+					fontSize : '10px',
+					fill: '#ffffff'
+				});
+				text3.setScrollFactor(0);
+
+
+
+			//CAMERA
 				
-				if( cursors.left.isDown ){ // If the left arrow key is pressed down
-					//activate motion
-					player.body.setVelocityX(-200);
+				
 
-					//activate animation
-					player.anims.play('walk', true);
+			
+				//Coin image used as tileset
+				
+			
+		}
 
-					//flip image horizontally
-					player.flipX = true;
+		function update() {
 
-				}else if(cursors.right.isDown){  // If the right arrow key is pressed down
-					//activate motion
-					player.body.setVelocityX(200);
+			
 
-					//activate animation
-					player.anims.play('walk', true);
+			if (cursors.left.isDown){
+    		player.setVelocityX(-100);
+    		player.anims.play("left", true);
+    		setleft();
+    	}
 
-					//flip image horizontally
-					player.flipX = false;
+    	else if (cursors.right.isDown){
+    		player.setVelocityX(100);
+    		player.anims.play("right", true);
+    		setright();
 
+    		
+    	}
+    	else{
+    		player.setVelocityX(0);
+    			if(leftflag < 6){
+    				player.anims.play("turnleft", true);
+
+    			}
+    			else{
+    				player.anims.play("turn", true);
+    			}
+    			
+    	}
+    	if((cursors.space.isDown ) && player.body.onFloor()){
+			
+					player.body.setVelocityY(-300);
 				}
+		if((cursors.up.isDown) && (climbladder > 5) ){
+			player.setVelocityY(-200);
 
-				if((cursors.space.isDown || cursors.up.isDown) && player.body.onFloor()){
-					
-					player.body.setVelocityY(-500);
-				}
 		}
 
 
-		/**
-		 * [collectCoin runs when player touches a coin. It removes sprite and adds to score
-		 * @param  {[object]} sprite [Graphic asset]
-		 * @param  {[object]} tile   [specific coin that player collided with]
-		 * @return {[boolean]}       [returns boolean: false]
-		 */
-		function collectCoin( sprite, tile ){
-			//remove tile from screen
-			coinLayer.removeTileAt( tile.x, tile.y );
+		if((player.x >600 && player.x < 680) || (player.x > 839 && player.x < 875 && player.y < 650 && player.y > 550) ){
+			climbladder = 10;
 
-			//add 1 to the score
-			score++;
-
-			//update Score UI
-			text.setText(score);
-
-			return false;
 		}
+		
+
+		else{
+			climbladder = 0;
+		};
+
+
+		if((player.x >1355) && (player.x < 1480) && (cursors.space.isDown) && (player.y < 400)){
+			player.y = 510
+		};
+
+		if((player.y > 450) && (player.x >1380) && (player.x < 1410) && (cursors.space.isDown)){
+			open();
+			
+			
+		}
+
+
+    	text.setText(player.x);
+    	text2.setText(player.y);
+    	text3.setText(player.x);
+		}
+
+		function setleft(){
+			leftflag = 0;
+
+		}
+
+		function setright(){
+			leftflag = 10;
+
+		}
+		function jump(){
+			
+
+		}
+
+		function useladder(player, ladderLayer){
+			
+		};
+		function open(sprite, tile){
+
+		
+		}
+	
 
 	</script>	
 	
